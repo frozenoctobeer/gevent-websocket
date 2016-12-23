@@ -27,8 +27,8 @@ class WebSocket(object):
         written to by this WebSocket object.
     """
 
-    __slots__ = ('utf8validator', 'utf8validate_last', 'environ', 'closed',
-                 'stream', 'raw_write', 'raw_read', 'handler')
+    #__slots__ = ('utf8validator', 'utf8validate_last', 'environ', 'closed',
+    #             'stream', 'raw_write', 'raw_read', 'handler')
 
     OPCODE_CONTINUATION = 0x00
     OPCODE_TEXT = 0x01
