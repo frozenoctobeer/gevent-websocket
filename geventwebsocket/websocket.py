@@ -27,8 +27,9 @@ class WebSocket(object):
         written to by this WebSocket object.
     """
 
-    #__slots__ = ('utf8validator', 'utf8validate_last', 'environ', 'closed',
-    #             'stream', 'raw_write', 'raw_read', 'handler')
+    __slots__ = ('utf8validator', 'utf8validate_last', 'environ', 'closed',
+                 'stream', 'raw_write', 'raw_read', 'handler',
+                 'last_ping_time', 'last_pong_time')
 
     OPCODE_CONTINUATION = 0x00
     OPCODE_TEXT = 0x01
@@ -36,6 +37,8 @@ class WebSocket(object):
     OPCODE_CLOSE = 0x08
     OPCODE_PING = 0x09
     OPCODE_PONG = 0x0a
+    PING_FREQ = 30
+    PONG_TOLERANCE = 15
 
     def __init__(self, environ, stream, handler):
         self.environ = environ
@@ -51,8 +54,6 @@ class WebSocket(object):
 
         self.last_ping_time = 0
         self.last_pong_time = 0
-        self.pong_tolerance = 15
-        self.ping_freq = 30
 
     def __del__(self):
         try:
@@ -198,12 +199,14 @@ class WebSocket(object):
     def check_ping_pong(self):
         if self.last_ping_time == 0:
             self.send_ping()
+            return
 
         if self.last_pong_time < self.last_ping_time:
-            if self.last_ping_time - self.last_pong_time > self.pong_tolerance:
+            if self.last_ping_time - self.last_pong_time > self.PONG_TOLERANCE:
                 raise PongTimeOutError
+            return
 
-        if time.time() - self.last_ping_time >= self.ping_freq:
+        if time.time() - self.last_ping_time >= self.PING_FREQ:
             self.send_ping()
 
     def send_ping(self):
@@ -420,7 +423,8 @@ class Stream(object):
         self.write = handler.socket.sendall
 
     def read(self, *args, **kwargs):
-        wait_read(self.handler.rfile.fileno(), 10, PingPongError)
+        wait_read(self.handler.rfile.fileno(), WebSocket.PING_FREQ,
+                  PingPongError)
         return self.handler.rfile.read(*args, **kwargs)
 
 
