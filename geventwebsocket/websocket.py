@@ -419,7 +419,7 @@ class Stream(object):
         self.write = handler.socket.sendall
 
     def read(self, *args, **kwargs):
-        wait_read(self.handler.rfile, 10, PingPongError)
+        wait_read(self.handler.rfile.fileno(), 10, PingPongError)
         return self.handler.rfile.read(*args, **kwargs)
 
 
