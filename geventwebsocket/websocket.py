@@ -267,6 +267,7 @@ class WebSocket(object):
                 header, payload = self.read_frame()
             except PingPongError:
                 self.check_ping_pong()
+                continue
 
             f_opcode = header.opcode
 
