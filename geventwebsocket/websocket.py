@@ -268,7 +268,7 @@ class WebSocket(object):
             except PingPongError:
                 self.check_ping_pong()
 
-                f_opcode = header.opcode
+            f_opcode = header.opcode
 
             if f_opcode in (self.OPCODE_TEXT, self.OPCODE_BINARY):
                 # a new frame
