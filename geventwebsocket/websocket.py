@@ -1,6 +1,9 @@
 import struct
+import time
 
 from socket import error
+
+from gevent.socket import wait_read
 
 from .exceptions import ProtocolError
 from .exceptions import WebSocketError
@@ -45,6 +48,11 @@ class WebSocket(object):
 
         self.utf8validator = Utf8Validator()
         self.handler = handler
+
+        self.last_ping_time = 0
+        self.last_pong_time = 0
+        self.pong_tolerance = 15
+        self.ping_freq = 30
 
     def __del__(self):
         try:
@@ -185,7 +193,21 @@ class WebSocket(object):
         self.send_frame(payload, self.OPCODE_PONG)
 
     def handle_pong(self, header, payload):
-        pass
+        self.last_pong_time = time.time()
+
+    def check_ping_pong(self):
+        if self.last_ping_time == 0:
+            self.send_ping()
+
+        if self.last_pong_time < self.last_ping_time:
+            if self.last_ping_time - self.last_pong_time > self.pong_tolerance:
+                raise PongTimeOutError
+
+        if time.time() - self.last_ping_time >= self.ping_freq:
+            self.send_ping()
+
+    def send_ping(self):
+        self.send_frame('', self.OPCODE_PING)
 
     def read_frame(self):
         """
@@ -241,8 +263,12 @@ class WebSocket(object):
         message = ""
 
         while True:
-            header, payload = self.read_frame()
-            f_opcode = header.opcode
+            try:
+                header, payload = self.read_frame()
+            except PingPongError:
+                self.check_ping_pong()
+
+                f_opcode = header.opcode
 
             if f_opcode in (self.OPCODE_TEXT, self.OPCODE_BINARY):
                 # a new frame
@@ -390,8 +416,19 @@ class Stream(object):
 
     def __init__(self, handler):
         self.handler = handler
-        self.read = handler.rfile.read
         self.write = handler.socket.sendall
+
+    def read(self, *args, **kwargs):
+        wait_read(self.handler.rfile, 10, PingPongError)
+        return self.handler.rfile.read(*args, **kwargs)
+
+
+class PingPongError(Exception):
+    pass
+
+
+class PongTimeOutError(Exception):
+    pass
 
 
 class Header(object):
