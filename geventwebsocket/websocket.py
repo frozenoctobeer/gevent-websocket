@@ -210,6 +210,7 @@ class WebSocket(object):
             self.send_ping()
 
     def send_ping(self):
+        self.last_ping_time = time.time()
         self.send_frame('', self.OPCODE_PING)
 
     def read_frame(self):
