@@ -37,7 +37,7 @@ class WebSocket(object):
     OPCODE_CLOSE = 0x08
     OPCODE_PING = 0x09
     OPCODE_PONG = 0x0a
-    PING_FREQ = 30
+    PING_FREQ = 20
     PONG_TOLERANCE = 15
 
     def __init__(self, environ, stream, handler):
