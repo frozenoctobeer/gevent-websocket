@@ -417,7 +417,7 @@ class Stream(object):
     object that can be read from/written to by the lower level websocket api.
     """
 
-    __slots__ = ('handler', 'read', 'write')
+    __slots__ = ('handler', 'write')
 
     def __init__(self, handler):
         self.handler = handler
