@@ -1,10 +1,10 @@
 import base64
 import hashlib
-import warnings
 
 from gevent.pywsgi import WSGIHandler
-from .websocket import WebSocket, Stream
+
 from .logging import create_logger
+from .websocket import WebSocket, Stream
 
 
 class Client(object):
@@ -216,7 +216,8 @@ class WebSocketHandler(WSGIHandler):
             ("Upgrade", "websocket"),
             ("Connection", "Upgrade"),
             ("Sec-WebSocket-Accept", base64.b64encode(
-                hashlib.sha1(key + self.GUID).digest())),
+                hashlib.sha1((key + self.GUID).encode("latin-1")).digest())
+                .decode("latin-1")),
         ]
 
         if protocol:
@@ -233,7 +234,11 @@ class WebSocketHandler(WSGIHandler):
         return self.server.logger
 
     def log_request(self):
-        if '101' not in self.status:
+        status = self.status
+        # On occasion if TLS connection is made and server is in HTTP mode
+        # status is going to be a string instead of a bytestring
+        if (isinstance(status, bytes) and (b'101' not in status) or
+                isinstance(status, str) and ('101' not in status)):
             self.logger.info(self.format_request())
 
     @property
