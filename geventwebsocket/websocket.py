@@ -11,7 +11,6 @@ from .exceptions import WebSocketError
 
 from .utf8validator import Utf8Validator
 
-
 MSG_SOCKET_DEAD = "Socket is dead"
 MSG_ALREADY_CLOSED = "Connection is already closed"
 MSG_CLOSED = "Connection closed"
@@ -284,8 +283,10 @@ class WebSocket(object):
                 self.check_ping_pong()
                 continue
 
+            header, payload = self.read_frame()
             f_opcode = header.opcode
             print('Frame opcode ', f_opcode)
+
             if f_opcode in (self.OPCODE_TEXT, self.OPCODE_BINARY):
                 # a new frame
                 if opcode:
@@ -421,8 +422,6 @@ class WebSocket(object):
             self.raw_read = None
 
             self.environ = None
-
-            #self.current_app.on_close(MSG_ALREADY_CLOSED)
 
 
 class Stream(object):
@@ -567,6 +566,7 @@ class Header(object):
         first_byte = opcode
         second_byte = 0
         extra = b''
+
         result = bytearray()
 
         if fin:
