@@ -361,6 +361,8 @@ class WebSocket(object):
         Send a frame over the websocket with message as its payload
         """
         print("Sending frame")
+        print('opcode, ', opcode)
+        print('message, ', message)
         if self.closed:
             self.current_app.on_close(MSG_ALREADY_CLOSED)
             raise WebSocketError(MSG_ALREADY_CLOSED)
@@ -371,10 +373,11 @@ class WebSocket(object):
             message = bytes(message)
 
         header = Header.encode_header(True, opcode, '', len(message), 0)
-
+        print('header, ', header)
         try:
             self.raw_write(header + message)
         except error:
+            print("Writing exception!")
             raise WebSocketError(MSG_SOCKET_DEAD)
 
     def send(self, message, binary=None):
@@ -390,6 +393,7 @@ class WebSocket(object):
         try:
             self.send_frame(message, opcode)
         except WebSocketError:
+            print("Sending exception!")
             self.current_app.on_close(MSG_SOCKET_DEAD)
             raise WebSocketError(MSG_SOCKET_DEAD)
 
