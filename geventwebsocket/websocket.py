@@ -275,11 +275,12 @@ class WebSocket(object):
             try:
                 header, payload = self.read_frame()
             except PingPongError:
+                print('Time to check_ping_pong')
                 self.check_ping_pong()
                 continue
 
             f_opcode = header.opcode
-
+            print('Frame opcode ', f_opcode)
             if f_opcode in (self.OPCODE_TEXT, self.OPCODE_BINARY):
                 # a new frame
                 if opcode:
@@ -302,6 +303,7 @@ class WebSocket(object):
                 continue
 
             elif f_opcode == self.OPCODE_PONG:
+                print('Going to handle pong')
                 self.handle_pong(header, payload)
                 continue
 
