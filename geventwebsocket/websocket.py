@@ -191,12 +191,15 @@ class WebSocket(object):
         self.close(code, payload)
 
     def handle_ping(self, header, payload):
+        print('Handle ping')
         self.send_frame(payload, self.OPCODE_PONG)
 
     def handle_pong(self, header, payload):
+        print('Handle pong')
         self.last_pong_time = time.time()
 
     def check_ping_pong(self):
+        print('Check ping-pong')
         if self.last_ping_time == 0:
             self.send_ping()
             return
@@ -210,6 +213,7 @@ class WebSocket(object):
             self.send_ping()
 
     def send_ping(self):
+        print('Sending ping')
         self.last_ping_time = time.time()
         self.send_frame(b'', self.OPCODE_PING)
 
@@ -222,7 +226,7 @@ class WebSocket(object):
 
         :return: The header and payload as a tuple.
         """
-
+        print('Reading frame')
         header = Header.decode_header(self.stream)
 
         if header.flags:
@@ -263,6 +267,7 @@ class WebSocket(object):
         This is an internal method as calling this will not cleanup correctly
         if an exception is called. Use `receive` instead.
         """
+        print('Reading message')
         opcode = None
         message = bytearray()
 
@@ -326,7 +331,7 @@ class WebSocket(object):
         Read and return a message from the stream. If `None` is returned, then
         the socket is considered closed/errored.
         """
-
+        print('Receiving')
         if self.closed:
             self.current_app.on_close(MSG_ALREADY_CLOSED)
             raise WebSocketError(MSG_ALREADY_CLOSED)
@@ -347,6 +352,7 @@ class WebSocket(object):
         """
         Send a frame over the websocket with message as its payload
         """
+        print("Sending frame")
         if self.closed:
             self.current_app.on_close(MSG_ALREADY_CLOSED)
             raise WebSocketError(MSG_ALREADY_CLOSED)
@@ -367,6 +373,7 @@ class WebSocket(object):
         """
         Send a frame over the websocket with message as its payload
         """
+        print('Sending')
         if binary is None:
             binary = not isinstance(message, str)
 
@@ -384,7 +391,7 @@ class WebSocket(object):
         message.  The underlying socket object is _not_ closed, that is the
         responsibility of the initiator.
         """
-
+        print('Closing')
         if self.closed:
             self.current_app.on_close(MSG_ALREADY_CLOSED)
 
