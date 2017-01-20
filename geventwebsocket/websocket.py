@@ -505,6 +505,7 @@ class Header(object):
         data = read(2)
 
         if len(data) != 2:
+            print("Unexpected EOF while decoding header")
             raise WebSocketError("Unexpected EOF while decoding header")
 
         first_byte, second_byte = struct.unpack('!BB', data)
@@ -514,6 +515,8 @@ class Header(object):
             opcode=first_byte & cls.OPCODE_MASK,
             flags=first_byte & cls.HEADER_FLAG_MASK,
             length=second_byte & cls.LENGTH_MASK)
+
+        print('Decoded header, ', header)
 
         has_mask = second_byte & cls.MASK_MASK == cls.MASK_MASK
 
