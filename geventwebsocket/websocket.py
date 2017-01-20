@@ -228,15 +228,18 @@ class WebSocket(object):
         """
         print('Reading frame')
         header = Header.decode_header(self.stream)
-
+        print('Header ', header)
         if header.flags:
+            print('ProtocolError')
             raise ProtocolError
 
         if not header.length:
+            print('Empty msg')
             return header, ''
 
         try:
             payload = self.raw_read(header.length)
+            print('Read payload: ', payload)
         except error:
             payload = ''
         except Exception:
@@ -247,8 +250,10 @@ class WebSocket(object):
             raise WebSocketError('Unexpected EOF reading frame payload')
 
         if header.mask:
+            print('Header mask')
             payload = header.unmask_payload(payload)
 
+        print('Finally, ', header, payload)
         return header, payload
 
     def validate_utf8(self, payload):
