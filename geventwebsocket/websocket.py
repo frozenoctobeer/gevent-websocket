@@ -230,7 +230,7 @@ class WebSocket(object):
         print('Header ', header)
         if header.flags:
             print('ProtocolError')
-            raise ProtocolError
+            #raise ProtocolError
 
         if not header.length:
             print('Empty msg')
